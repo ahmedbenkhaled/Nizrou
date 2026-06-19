@@ -198,17 +198,21 @@ export function AppContent() {
   const progressTimerRef = useRef(null);
 
  useEffect(() => {
-    fetch('https://ipapi.co/json/')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data && data.country_code) {
-          setDetectedCountry(data.country_code.toLowerCase());
-        }
-      })
-      .catch(() => {
-        // إدارة صامتة وآمنة للأخطاء: عند حدوث أي حظر أو CORS، ينتقل التطبيق فوراً للوضع الافتراضي المستقر
+    try {
+      // كاشف التوقيت الهجين الآمن لتحديد المنطقة الجغرافية محلياً دون طلبات شبكة خارجية
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (timeZone.includes("Algiers")) {
+        setDetectedCountry("dz");
+      } else if (timeZone.includes("Casablanca")) {
+        setDetectedCountry("ma");
+      } else if (timeZone.includes("Tunis")) {
+        setDetectedCountry("tn");
+      } else {
         setDetectedCountry("all");
-      });
+      }
+    } catch (e) {
+      setDetectedCountry("all");
+    }
   }, []);
 
   useEffect(() => {

@@ -157,16 +157,15 @@ function Navbar({ detectedCountry, setDetectedCountry, isModalOpen, setIsModalOp
             // استخدام ipinfo.io لتجنب مشاكل الـ CORS والـ Mixed Content تماماً
             // الاعتماد على مزود خدمة مفتوح وبدون قيود CORS لضمان استقرار طلبات المتصفح المباشرة
 try {
-  const res = await fetch('https://ipapi.co/json/');
-  const data = await res.json();
-  if (data && data.country_code && !localStorage.getItem("selected_country")) {
-    if (typeof setDetectedCountry === 'function') {
-      setDetectedCountry(data.country_code.toLowerCase());
-    }
+  if (!localStorage.getItem("selected_country") && typeof setDetectedCountry === 'function') {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (tz.includes("Algiers")) setDetectedCountry("dz");
+    else if (tz.includes("Casablanca")) setDetectedCountry("ma");
+    else if (tz.includes("Tunis")) setDetectedCountry("tn");
+    else setDetectedCountry("all");
   }
 } catch (silentError) {
-  // الحماية من الانهيار: في حال فشل الـ Fetch، يستمر العمل بمرونة دون إفساد سجلات الـ Console
-  if (!localStorage.getItem("selected_country") && typeof setDetectedCountry === 'function') {
+  if (typeof setDetectedCountry === 'function') {
     setDetectedCountry("all");
   }
 }
