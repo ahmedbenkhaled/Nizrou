@@ -139,7 +139,7 @@ function Navbar({ detectedCountry, setDetectedCountry, isModalOpen, setIsModalOp
     await logout();           
   };
 
-  useEffect(() => {
+ useEffect(() => {
     // التحقق أولاً مما إذا كان المستخدم قد اختار دولة يدوياً مسبقاً
     const savedCountry = localStorage.getItem("selected_country");
     if (typeof setDetectedCountry === 'function') {
@@ -154,13 +154,14 @@ function Navbar({ detectedCountry, setDetectedCountry, isModalOpen, setIsModalOp
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           try {
-            const res = await fetch('https://ipapi.co/json/');
-const data = await res.json();
-if (data && data.country_code) {
-  if (!localStorage.getItem("selected_country") && typeof setDetectedCountry === 'function') {
-    setDetectedCountry(data.country_code.toLowerCase());
-  }
-}
+            // استخدام ipinfo.io لتجنب مشاكل الـ CORS والـ Mixed Content تماماً
+            const res = await fetch("https://ipinfo.io/json");
+            const data = await res.json();
+            if (data && data.country) {
+              if (!localStorage.getItem("selected_country") && typeof setDetectedCountry === 'function') {
+                setDetectedCountry(data.country.toLowerCase());
+              }
+            }
           } catch (err) {
             console.warn("تأمين الموقع مستمر عبر كاشف التوقيت الهجين.");
           }
