@@ -197,22 +197,22 @@ export function AppContent() {
   const [progress, setProgress] = useState(0);
   const progressTimerRef = useRef(null);
 
-  useEffect(() => {
-    // استخدام مزود بديل متوافق تماماً مع بيئة التطوير المحلية
-    fetch('http://ip-api.com/json/')
+ useEffect(() => {
+    // استخدام مزود بروتوكول آمن 100% متوافق مع خوادم الإنتاج لمنع Mixed Content
+    fetch('https://openip.dev/json')
       .then((res) => {
-        if (!res.ok) throw new Error('فشل استجابة الشبكة');
+        if (!res.ok) throw new Error('فشل استجابة الشبكة الآمنة');
         return res.json();
       })
       .then((data) => {
-        if (data && data.countryCode) {
-          // تحديث الحالة برمز الدولة المكتشف (مثل: DZ, US, FR)
-          setDetectedCountry(data.countryCode);
+        if (data && data.country_code) {
+          // تحديث الحالة برمز الدولة المكتشف بصيغة حروف صغيرة متوافقة مع منطق تطبيقك
+          setDetectedCountry(data.country_code.toLowerCase());
         }
       })
       .catch((err) => {
         console.error("فشل الفحص الجغرافي المساعد للواجهة، استخدام الوضع الافتراضي:", err);
-        setDetectedCountry("all"); //Fallback أمني عند تعطل السيرفر الخارجي
+        setDetectedCountry("all"); 
       });
   }, []);
 

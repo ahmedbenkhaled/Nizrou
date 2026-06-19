@@ -155,13 +155,14 @@ function Navbar({ detectedCountry, setDetectedCountry, isModalOpen, setIsModalOp
         async (position) => {
           try {
             // استخدام ipinfo.io لتجنب مشاكل الـ CORS والـ Mixed Content تماماً
-            const res = await fetch("https://ipinfo.io/json");
-            const data = await res.json();
-            if (data && data.country) {
-              if (!localStorage.getItem("selected_country") && typeof setDetectedCountry === 'function') {
-                setDetectedCountry(data.country.toLowerCase());
-              }
-            }
+            // الاعتماد على مزود خدمة مفتوح وبدون قيود CORS لضمان استقرار طلبات المتصفح المباشرة
+const res = await fetch('https://openip.dev/json');
+const data = await res.json();
+if (data && data.country_code) {
+  if (!localStorage.getItem("selected_country") && typeof setDetectedCountry === 'function') {
+    setDetectedCountry(data.country_code.toLowerCase());
+  }
+}
           } catch (err) {
             console.warn("تأمين الموقع مستمر عبر كاشف التوقيت الهجين.");
           }
