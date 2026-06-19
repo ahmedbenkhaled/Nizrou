@@ -82,39 +82,50 @@ wallet_address: activeWallet.address              })
 
   // 🟢 [ميزة التحديث اللحظي المالي لـ MVP]
   // الاستماع لجدول profiles فور توفر بيانات المستخدم
+  // 1. الاستماع لجدول profiles فور توفر بيانات المستخدم بشكل مستقر
   useEffect(() => {
-    if (!user || !user.id) return;
+    if (!user?.id) return;
 
-    // الاشتراك في القناة اللحظية لحساب المستخدم الحالي فقط
+    const channelId = `realtime-profile-${user.id}`;
     const profileChannel = supabase
-      .channel(`realtime-profile-${user.id}`)
+      .channel(channelId)
       .on(
         "postgres_changes",
         {
           event: "UPDATE",
           schema: "public",
           table: "profiles",
-          filter: `id=eq.${user.id}`, // فلترة آمنة لجلب تحديثات هذا الحساب فقط
+          filter: `id=eq.${user.id}`,
         },
         (payload) => {
           console.log("⚡ تحديث مالي لحظي مكتشف من السيرفر:", payload.new);
-          // تحديث الـ state للرصيد والبيانات فوراً دون عمل refresh للموقع
           setProfile(payload.new);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          console.log(`🔗 تم الاشتراك بنجاح في القناة اللحظية للمستخدم: ${user.id}`);
+        }
+      });
 
-    // تنظيف الاشتراك عند خروج المستخدم أو تغيير المكون لمنع تسريب الذاكرة Memory Leak
     return () => {
-      supabase.removeChannel(profileChannel);
+      if (profileChannel) {
+        console.log(`🔌 إغلاق القناة لمنع تسريب الذاكرة: ${channelId}`);
+        supabase.removeChannel(profileChannel);
+      }
     };
-  }, [user]);
+  }, [user?.id]); // الاعتماد على الـ id فقط يمنع إعادة الاشتراك اللانهائي عند تغير الكائن نفسه
 
+  // 2. ربط محفظة Privy المدمجة الآمنة بملف المستخدم عند الجاهزية فقط وبدون تكرار
   useEffect(() => {
-  if (user && profile && !profile.wallet_address && embeddedWallet) {
-    refreshUserSession(embeddedWallet);
-  }
-}, [embeddedWallet, user, profile]);
+    const hasWallet = profile && profile.wallet_address;
+    const walletAddressReady = embeddedWallet && embeddedWallet.address;
+
+    if (user && walletAddressReady && !hasWallet && !isLoading) {
+      console.log("🚀 اكتشاف محفظة مدمجة جديدة، بدء الربط بقاعدة البيانات...");
+      refreshUserSession(embeddedWallet);
+    }
+  }, [user, embeddedWallet?.address, profile?.wallet_address, isLoading]);
   // دالة مغلفة لإنشاء حساب جديد
   const sendOTP = async (email) => {
     return await apiSendOTP(email);

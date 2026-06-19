@@ -154,16 +154,13 @@ function Navbar({ detectedCountry, setDetectedCountry, isModalOpen, setIsModalOp
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           try {
-            const { latitude, longitude } = position.coords;
-            const res = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-            );
-            const data = await res.json();
-            if (data && data.address && data.address.country_code) {
-              if (!localStorage.getItem("selected_country") && typeof setDetectedCountry === 'function') {
-                setDetectedCountry(data.address.country_code.toLowerCase());
-              }
-            }
+            const res = await fetch('https://ipapi.co/json/');
+const data = await res.json();
+if (data && data.country_code) {
+  if (!localStorage.getItem("selected_country") && typeof setDetectedCountry === 'function') {
+    setDetectedCountry(data.country_code.toLowerCase());
+  }
+}
           } catch (err) {
             console.warn("تأمين الموقع مستمر عبر كاشف التوقيت الهجين.");
           }
@@ -211,8 +208,10 @@ function Navbar({ detectedCountry, setDetectedCountry, isModalOpen, setIsModalOp
     fetchNotifications();
 
     // 2. فتح قناة الاتصال اللحظي للبث الفوري (Realtime Channel)
+    // 2. فتح قناة الاتصال اللحظي مع فحص الإغلاق المنهجي لمنع تسريب الذاكرة
+    const channelName = `user-notifications-${user.id}`;
     const notifChannel = supabase
-      .channel(`user-notifications-${user.id}`)
+      .channel(channelName)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
@@ -223,7 +222,9 @@ function Navbar({ detectedCountry, setDetectedCountry, isModalOpen, setIsModalOp
       .subscribe();
 
     return () => {
-      supabase.removeChannel(notifChannel);
+      if (notifChannel) {
+        supabase.removeChannel(notifChannel);
+      }
     };
   }, [user?.id]);
 
