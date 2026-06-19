@@ -198,21 +198,16 @@ export function AppContent() {
   const progressTimerRef = useRef(null);
 
  useEffect(() => {
-    // استخدام مزود بروتوكول آمن 100% متوافق مع خوادم الإنتاج لمنع Mixed Content
-    fetch('https://openip.dev/json')
-      .then((res) => {
-        if (!res.ok) throw new Error('فشل استجابة الشبكة الآمنة');
-        return res.json();
-      })
+    fetch('https://ipapi.co/json/')
+      .then((res) => res.json())
       .then((data) => {
         if (data && data.country_code) {
-          // تحديث الحالة برمز الدولة المكتشف بصيغة حروف صغيرة متوافقة مع منطق تطبيقك
           setDetectedCountry(data.country_code.toLowerCase());
         }
       })
-      .catch((err) => {
-        console.error("فشل الفحص الجغرافي المساعد للواجهة، استخدام الوضع الافتراضي:", err);
-        setDetectedCountry("all"); 
+      .catch(() => {
+        // إدارة صامتة وآمنة للأخطاء: عند حدوث أي حظر أو CORS، ينتقل التطبيق فوراً للوضع الافتراضي المستقر
+        setDetectedCountry("all");
       });
   }, []);
 

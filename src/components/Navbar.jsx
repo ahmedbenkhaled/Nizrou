@@ -156,11 +156,18 @@ function Navbar({ detectedCountry, setDetectedCountry, isModalOpen, setIsModalOp
           try {
             // استخدام ipinfo.io لتجنب مشاكل الـ CORS والـ Mixed Content تماماً
             // الاعتماد على مزود خدمة مفتوح وبدون قيود CORS لضمان استقرار طلبات المتصفح المباشرة
-const res = await fetch('https://openip.dev/json');
-const data = await res.json();
-if (data && data.country_code) {
+try {
+  const res = await fetch('https://ipapi.co/json/');
+  const data = await res.json();
+  if (data && data.country_code && !localStorage.getItem("selected_country")) {
+    if (typeof setDetectedCountry === 'function') {
+      setDetectedCountry(data.country_code.toLowerCase());
+    }
+  }
+} catch (silentError) {
+  // الحماية من الانهيار: في حال فشل الـ Fetch، يستمر العمل بمرونة دون إفساد سجلات الـ Console
   if (!localStorage.getItem("selected_country") && typeof setDetectedCountry === 'function') {
-    setDetectedCountry(data.country_code.toLowerCase());
+    setDetectedCountry("all");
   }
 }
           } catch (err) {
