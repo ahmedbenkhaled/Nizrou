@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "bufferutil": "https://esm.sh/v135/node-noop",
+    "utf-8-validate": "https://esm.sh/v135/node-noop",
+    "fsevents": "https://esm.sh/v135/node-noop"
+  }
+}

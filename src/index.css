@@ -1,0 +1,49 @@
+/* src/index.css */
+@import "tailwindcss";
+
+@theme {
+  --font-cairo: "Cairo", sans-serif;
+  
+  /* ⚡ التعريف الهندسي الصحيح للحركات في Tailwind v4 */
+  --animate-fadeIn: fadeIn 0.2s ease-out forwards;
+  --animate-marquee-vertical: marqueeVertical 15s linear infinite;
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes marqueeVertical {
+    0% { transform: translateY(0%); }
+    100% { transform: translateY(-50%); }
+  }
+}
+
+/* طبقة الإعدادات الأساسية لقماش لوحة نيزرو */
+@layer base {
+  html, body, #root {
+    background-color: #020617; /* Slate 950 */
+    color: #f8fafc; /* Slate 50 */
+    overflow-x: hidden;
+    font-family: var(--font-cairo), system-ui, sans-serif;
+  }
+}
+
+/* ⚡ تم الإصلاح هنا: اسم الـ utility نقي تماماً وتيلويند يضيف الـ hover تلقائياً */
+@utility pause-marquee {
+  animation-play-state: paused;
+}
+
+/* القناع المتطور لقص حواف التعليقات لجعلها تختفي تدريجياً من الأعلى والأسفل */
+.mask-gradient-safari {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 15%, #000 85%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 15%, #000 85%, transparent 100%);
+}
+
+/* كلاس تأمين العتاد الرسومي للكاروسيل لمنع الوميض واهتزاز المعالج */
+.will-change-transform {
+  will-change: transform;
+}
+
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 20px; }

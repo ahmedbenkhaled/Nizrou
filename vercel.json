@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "routes": [
+    {
+      "src": "/(.*?)\\.(js|css|png|jpg|jpeg|svg|ico|json|woff|woff2)",
+      "dest": "/$1.$2"
+    },
+    {
+      "src": "/(.*)",
+      "middlewarePath": "middleware",
+      "dest": "/index.html"
+    }
+  ]
+}

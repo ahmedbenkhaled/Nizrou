@@ -1,0 +1,4 @@
+project_id = "jfiyxwwuxasduxsdruji"
+
+[functions.manage-ai-markets]
+verify_jwt = false
