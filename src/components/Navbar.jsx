@@ -201,36 +201,54 @@ try {
       return;
     }
 
-    // 1. جلب الإشعارات الحالية من قاعدة البيانات
+    // 1. جلب الإشعارات من قاعدة البيانات عند الإقلاع
     const fetchNotifications = async () => {
-      const { data, error } = await supabase
-        .from("notifications")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(20);
+      try {
+        const { data, error } = await supabase
+          .from("notifications")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(20);
 
-      if (!error && data) setNotifications(data);
+        if (!error && data) {
+          setNotifications(data);
+        }
+      } catch (err) {
+        console.error("خطأ أثناء جلب الإشعارات:", err);
+      }
     };
 
     fetchNotifications();
 
-    // 2. فتح قناة الاتصال اللحظي للبث الفوري (Realtime Channel)
-    // 2. فتح قناة الاتصال اللحظي مع فحص الإغلاق المنهجي لمنع تسريب الذاكرة
+    // 2. إنشاء قناة استماع حية واحدة موحدة ومنظومة برمجياً
     const channelName = `user-notifications-${user.id}`;
-    const notifChannel = supabase
-      .channel(channelName)
+    const notifChannel = supabase.channel(channelName);
+
+    notifChannel
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
+        { 
+          event: "INSERT", 
+          schema: "public", 
+          table: "notifications", 
+          filter: `user_id=eq.${user.id}` 
+        },
         (payload) => {
+          console.log("🔔 إشعار لحظي جديد مستلم:", payload.new);
           setNotifications((prev) => [payload.new, ...prev]);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          console.log(`🔗 تم تفعيل البث اللحظي للإشعارات بنجاح: ${channelName}`);
+        }
+      });
 
+    // 3. تنظيف وإغلاق القناة كلياً وفورياً عند خروج المستخدم أو تفكيك المكون لمنع تسريب الذاكرة والانهيار
     return () => {
       if (notifChannel) {
+        console.log(`🔌 إغلاق آمن لقناة الإشعارات لمنع الانهيار: ${channelName}`);
         supabase.removeChannel(notifChannel);
       }
     };
