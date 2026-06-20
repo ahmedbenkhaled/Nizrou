@@ -220,16 +220,16 @@ if (timeZone.includes("algiers") || timeZone.includes("algeria") || timeZone.inc
 setDetectedCountry(countryCode.toLowerCase());
 
         // 2. جلب إعدادات الحظر مباشرة من جدول app_settings في سوبابيس
-        const { data, error } = await supabase
-          .from("app_settings")
-          .select("blocked_countries, vpn_blocking_enabled")
-          .eq("id", 1) // السطر الأول الذي يحتوي على البيانات في لقطة الشاشة
-          .single();
+        // 2. جلب إعدادات الحظر بأمان دون التسبب في خطأ 406
+const { data, error } = await supabase
+  .from("app_settings")
+  .select("blocked_countries, vpn_blocking_enabled")
+  .limit(1); // جلب السطر الأول المتوفر أياً كان معرفه (ID)
 
-        if (error) throw error;
+if (error) throw error;
 
-        if (data) {
-          const { blocked_countries, vpn_blocking_enabled } = data;
+if (data && data.length > 0) {
+  const { blocked_countries, vpn_blocking_enabled } = data[0];
 
           // 3. إذا كان الحظر مفعلاً، وكانت دولة المستخدم الحالية مدرجة ضمن قائمة المحظورين، يتم توجيهه قسراً
           if (vpn_blocking_enabled && blocked_countries?.includes(countryCode)) {
