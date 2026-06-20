@@ -15,6 +15,7 @@ import { supabase } from "./lib/supabaseClient";
 import ProtectedRoute from "./components/ProtectedRoute"
 import MarketsExplore from "./pages/MarketsExplore";
 import GeoblockingPage from "./pages/GeoblockingPage";
+import PortfolioPage from "./pages/PortfolioPage";
 
 const PRIVY_APP_ID = import.meta.env.VITE_PRIVY_APP_ID || "cmqij856i00nr0cl4yno595r4";
 
@@ -324,7 +325,7 @@ export function AppContent() {
       {/* 🌟 هذا هو المسار الجديد لصفحة التصفية المتقدمة التي أضفناها */}
      <Route path="/explore" element={<MarketsExplore detectedCountry={detectedCountry} setDetectedCountry={setDetectedCountry} />} />
 
-      
+      <Route path="/portfolio" element={<PortfolioPage />} />
       <Route 
         path="/market/:id" 
         element={
@@ -352,8 +353,9 @@ export function AppContent() {
 // ننشئ مكون مغلف وسيط لاستهلاك الـ Context بشكل سليم
 function AppStylesWrapper() {
   const { theme } = useAuth();
+  // ⚡ تم إزالة الهامش العلوي الثابت pt-[145px] لمنع تداخل المسافات مع الصفحات الفرعية مثل المحفظة
   return (
-    <div className={`min-h-screen flex flex-col pt-[145px] transition-colors duration-200 ${
+    <div className={`min-h-screen flex flex-col transition-colors duration-200 ${
       theme === "dark" ? "bg-slate-950 text-white" : "bg-slate-50 text-slate-900"
     }`}>
       <AppContent />

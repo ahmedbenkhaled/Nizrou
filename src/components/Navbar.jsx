@@ -410,15 +410,15 @@ try {
               </div>
 
               {isLoading && !user ? (
-                <WalletSkeleton />
-              ) : (
-                <div className="flex flex-col text-right pl-1 shrink-0">
-                  <span className="text-xs text-slate-400 font-medium mb-0.5">المحفظة</span>
-                  <span className="text-base font-bold text-emerald-400 font-mono leading-tight">
-                    {`$${Number(profile?.balance ?? 0).toFixed(2)}`}
-                  </span>
-                </div>
-              )}
+  <WalletSkeleton />
+) : (
+  <a href="/portfolio" className="flex flex-col text-right pl-1 shrink-0 cursor-pointer no-underline group">
+    <span className="text-xs text-slate-400 font-medium mb-0.5 group-hover:text-blue-400 transition-colors">المحفظة</span>
+    <span className="text-base font-bold text-emerald-400 font-mono leading-tight">
+      {`$${Number(profile?.balance ?? 0).toFixed(2)}`}
+    </span>
+  </a>
+)}
 
               {/* ⚡ تصحيح حاسم: تشغيل الـ State الخاص بالإيداع المباشر لفتح المودال بشكل صحيح */}
               <button 
