@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { PrivyProvider } from "@privy-io/react-auth";
 import MarketDetailPage from "./pages/MarketDetailPage";
 import AdminPanel from "./pages/AdminPanel";
-import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext"; 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -357,7 +357,7 @@ export function AppContent() {
 function AppStylesWrapper() {
   const { theme } = useAuth();
   return (
-    <div className={`min-h-screen flex flex-col pt-[145px] transition-colors duration-200 ${
+    <div className={`min-h-screen flex flex-col pt-[-145px] transition-colors duration-200 ${
       theme === "dark" ? "bg-slate-950 text-white" : "bg-slate-50 text-slate-900"
     }`}>
       <AppContent />
