@@ -187,6 +187,7 @@ function HomePage({
 
 export function AppContent() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [detectedCountry, setDetectedCountry] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalView, setModalView] = useState("instructions");
@@ -200,21 +201,23 @@ export function AppContent() {
 
  useEffect(() => {
     try {
-      // كاشف التوقيت الهجين الآمن لتحديد المنطقة الجغرافية محلياً دون طلبات شبكة خارجية
       const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      if (timeZone.includes("Algiers")) {
-        setDetectedCountry("dz");
-      } else if (timeZone.includes("Casablanca")) {
-        setDetectedCountry("ma");
-      } else if (timeZone.includes("Tunis")) {
-        setDetectedCountry("tn");
-      } else {
-        setDetectedCountry("all");
+      let country = "all";
+      
+      if (timeZone.includes("Algiers")) country = "dz";
+      else if (timeZone.includes("Casablanca")) country = "ma";
+      else if (timeZone.includes("Tunis")) country = "tn";
+      
+      setDetectedCountry(country);
+
+      // 🛡️ تفعيل جدار الحظر الجغرافي حياً: إذا تم رصد مستخدم من الدول المقيدة ولم يكن في صفحة الحظر بالفعل، يتم توجيهه قسراً
+      if (country !== "all" && location.pathname !== "/restricted") {
+        navigate("/restricted");
       }
     } catch (e) {
       setDetectedCountry("all");
     }
-  }, []);
+  }, [location.pathname, navigate]);
 
   useEffect(() => {
     const fetchMarkets = async () => {
@@ -353,9 +356,8 @@ export function AppContent() {
 // ننشئ مكون مغلف وسيط لاستهلاك الـ Context بشكل سليم
 function AppStylesWrapper() {
   const { theme } = useAuth();
-  // ⚡ تم إزالة الهامش العلوي الثابت pt-[145px] لمنع تداخل المسافات مع الصفحات الفرعية مثل المحفظة
   return (
-    <div className={`min-h-screen flex flex-col transition-colors duration-200 ${
+    <div className={`min-h-screen flex flex-col pt-[145px] transition-colors duration-200 ${
       theme === "dark" ? "bg-slate-950 text-white" : "bg-slate-50 text-slate-900"
     }`}>
       <AppContent />
