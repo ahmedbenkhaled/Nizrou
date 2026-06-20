@@ -34,10 +34,14 @@ function SearchBar() {
     }
   };
 
-  // ...
   return (
     <div className="hidden md:flex items-center flex-1 min-w-[300px] w-full h-full relative self-center">
-      {/* ... أيقونة البحث والـ input ... */}
+      <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-500 z-10">
+        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+
       <input
         type="text"
         value={query}
@@ -45,21 +49,17 @@ function SearchBar() {
         onKeyDown={handleKeyDown}
         placeholder="ابحث عن الأسواق"
         onFocus={() => setIsFocused(true)}
-        onBlur={() => setTimeout(() => setIsFocused(false), 300)} // 👈 تم تعديل التوقيت هنا إلى 300
-        className="..."
+        onBlur={() => setTimeout(() => setIsFocused(false), 200)} // تعديل التوقيت لالتقاط الكليكات بأمان
+        className="w-full bg-slate-900 focus:bg-slate-950 border border-transparent text-slate-200 placeholder-slate-500 text-sm rounded-xl focus:rounded-b-none py-2 pr-10 pl-4 outline-none focus:outline-none focus:border-slate-900 transition-all duration-200 font-cairo font-light placeholder:font-light text-right"
       />
 
       {!isFocused && (
-        <div className="...">/</div>
+        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-xs text-slate-600 font-mono">
+          /
+        </div>
       )}
 
-      {/* 👈 تم استبدال السطر القديم بهذا السطر المطور وتمرير الـ Props */}
-      {isFocused && (
-        <SearchDropdown 
-          searchQuery={query} 
-          clearSearch={() => { setQuery(""); setIsFocused(false); }} 
-        />
-      )}
+      {isFocused && <SearchDropdown />}
     </div>
   );
 }
