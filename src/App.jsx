@@ -200,23 +200,45 @@ export function AppContent() {
   const progressTimerRef = useRef(null);
 
  useEffect(() => {
-    try {
-      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      let country = "all";
-      
-      if (timeZone.includes("Algiers")) country = "dz";
-      else if (timeZone.includes("Casablanca")) country = "ma";
-      else if (timeZone.includes("Tunis")) country = "tn";
-      
-      setDetectedCountry(country);
+    const checkGeoblocking = async () => {
+      try {
+        // 1. تحديد المنطقة الزمنية وتحويلها لرمز الدولة بالصيغة الكبيرة المتوافقة مع قاعدة بياناتك
+        const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        let countryCode = "ALL";
+        
+        if (timeZone.includes("Algiers")) countryCode = "DZ";
+        else if (timeZone.includes("Casablanca")) countryCode = "MA";
+        else if (timeZone.includes("Tunis")) countryCode = "TN";
+        else if (timeZone.includes("America") || timeZone.includes("US")) countryCode = "US"; // مثال إضافي لأمريكا
+        
+        setDetectedCountry(countryCode.toLowerCase());
 
-      // 🛡️ تفعيل جدار الحظر الجغرافي حياً: إذا تم رصد مستخدم من الدول المقيدة ولم يكن في صفحة الحظر بالفعل، يتم توجيهه قسراً
-      if (country !== "all" && location.pathname !== "/restricted") {
-        navigate("/restricted");
+        // 2. جلب إعدادات الحظر مباشرة من جدول app_settings في سوبابيس
+        const { data, error } = await supabase
+          .from("app_settings")
+          .select("blocked_countries, vpn_blocking_enabled")
+          .eq("id", 1) // السطر الأول الذي يحتوي على البيانات في لقطة الشاشة
+          .single();
+
+        if (error) throw error;
+
+        if (data) {
+          const { blocked_countries, vpn_blocking_enabled } = data;
+
+          // 3. إذا كان الحظر مفعلاً، وكانت دولة المستخدم الحالية مدرجة ضمن قائمة المحظورين، يتم توجيهه قسراً
+          if (vpn_blocking_enabled && blocked_countries?.includes(countryCode)) {
+            if (location.pathname !== "/restricted") {
+              navigate("/restricted");
+            }
+          }
+        }
+      } catch (e) {
+        console.error("خطأ في التحقق من الحظر الجغرافي:", e);
+        // في حال حدوث خطأ في الاتصال، نترك المستخدم يتصفح كإجراء احتياطي آمن
       }
-    } catch (e) {
-      setDetectedCountry("all");
-    }
+    };
+
+    checkGeoblocking();
   }, [location.pathname, navigate]);
 
   useEffect(() => {
