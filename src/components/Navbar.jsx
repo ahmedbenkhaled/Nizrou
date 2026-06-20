@@ -431,9 +431,9 @@ try {
                 إيداع
               </button>
 
-              <button className="text-slate-400 hover:text-white transition-colors cursor-pointer p-1 shrink-0">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M20 12V8H4v4M3 4h18v4H3zm2 8h14v8H5zm5 0v8m4-8v8M12 4c1-1.333 3-2 4-1 1.333 1.333 0 3-.5 3.5H8.5C8 6 6.667 4.333 8 3c1-1 3-.333 4 1z" />
+              <button className="text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-900 shrink-0 group">
+                <svg className="w-5 h-5 stroke-current fill-none transition-colors duration-200 shrink-0" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h17.25c.621 0 1.125-.504 1.125-1.125V8.25c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v2.25c0 .621.504 1.125 1.125 1.125z" />
                 </svg>
               </button>
 
