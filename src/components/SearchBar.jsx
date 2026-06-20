@@ -49,7 +49,7 @@ function SearchBar() {
         onKeyDown={handleKeyDown}
         placeholder="ابحث عن الأسواق"
         onFocus={() => setIsFocused(true)}
-        onBlur={() => setTimeout(() => setIsFocused(false), 200)} // تعديل التوقيت لالتقاط الكليكات بأمان
+        onBlur={() => setTimeout(() => setIsFocused(false), 300)} // 👈 تم رفع المدة إلى 300ms هنا
         className="w-full bg-slate-900 focus:bg-slate-950 border border-transparent text-slate-200 placeholder-slate-500 text-sm rounded-xl focus:rounded-b-none py-2 pr-10 pl-4 outline-none focus:outline-none focus:border-slate-900 transition-all duration-200 font-cairo font-light placeholder:font-light text-right"
       />
 
@@ -59,7 +59,13 @@ function SearchBar() {
         </div>
       )}
 
-      {isFocused && <SearchDropdown />}
+      {/* 👈 تم استبدال السطر القديم وتمرير الـ Props المطلوبة لمحرك البحث اللحظي */}
+      {isFocused && (
+        <SearchDropdown 
+          searchQuery={query} 
+          clearSearch={() => { setQuery(""); setIsFocused(false); }} 
+        />
+      )}
     </div>
   );
 }
