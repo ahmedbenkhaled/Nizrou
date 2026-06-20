@@ -203,15 +203,21 @@ export function AppContent() {
     const checkGeoblocking = async () => {
       try {
         // 1. تحديد المنطقة الزمنية وتحويلها لرمز الدولة بالصيغة الكبيرة المتوافقة مع قاعدة بياناتك
-        const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        let countryCode = "ALL";
-        
-        if (timeZone.includes("Algiers")) countryCode = "DZ";
-        else if (timeZone.includes("Casablanca")) countryCode = "MA";
-        else if (timeZone.includes("Tunis")) countryCode = "TN";
-        else if (timeZone.includes("America") || timeZone.includes("US")) countryCode = "US"; // مثال إضافي لأمريكا
-        
-        setDetectedCountry(countryCode.toLowerCase());
+        // 1. تحديد المنطقة الزمنية وتحويلها لأحرف صغيرة لضمان دقة الرصد البرمجي الآمن
+const timeZone = (Intl.DateTimeFormat().resolvedOptions().timeZone || "").toLowerCase();
+let countryCode = "ALL";
+
+if (timeZone.includes("algiers") || timeZone.includes("algeria") || timeZone.includes("dz")) {
+  countryCode = "DZ";
+} else if (timeZone.includes("casablanca") || timeZone.includes("morocco") || timeZone.includes("ma")) {
+  countryCode = "MA";
+} else if (timeZone.includes("tunis") || timeZone.includes("tunisia") || timeZone.includes("tn")) {
+  countryCode = "TN";
+} else if (timeZone.includes("america") || timeZone.includes("us")) {
+  countryCode = "US";
+}
+
+setDetectedCountry(countryCode.toLowerCase());
 
         // 2. جلب إعدادات الحظر مباشرة من جدول app_settings في سوبابيس
         const { data, error } = await supabase
