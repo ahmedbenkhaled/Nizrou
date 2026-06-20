@@ -1,9 +1,12 @@
 // src/components/SearchDropdown.jsx
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabaseClient";
 
-function SearchDropdown() {
+function SearchDropdown({ searchQuery, clearSearch }) {
   const navigate = useNavigate();
+  const [liveMarkets, setLiveMarkets] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   // مصفوفة الحالات مع الفرز المطابق للنظام الخلفي
   const browseItems = [
@@ -24,58 +27,151 @@ function SearchDropdown() {
     { name: "اقتصاد وأعمال", dbId: "Business", image: "/images/business.png" },
   ];
 
+  useEffect(() => {
+    const fetchSearchMarkets = async () => {
+      if (!searchQuery || searchQuery.trim() === "") {
+        setLiveMarkets([]);
+        return;
+      }
+      setIsSearching(true);
+      try {
+        const { data, error } = await supabase
+          .from("markets")
+          .select("id, question, image_url, yes_price")
+          .ilike("question", `%${searchQuery}%`)
+          .order("volume", { ascending: false })
+          .limit(5);
+
+        if (!error && data) setLiveMarkets(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    const delayDebounce = setTimeout(() => { fetchSearchMarkets(); }, 150);
+    return () => clearTimeout(delayDebounce);
+  }, [searchQuery]);
+  
   const handleBrowseClick = (sortId) => {
+    if (clearSearch) clearSearch();
     navigate(`/explore?sort=${sortId}`);
   };
 
   const handleTopicClick = (catId) => {
+    if (clearSearch) clearSearch();
     navigate(`/explore?category=${catId}`);
+  };
+
+  const handleMarketClick = (id) => {
+    if (clearSearch) clearSearch();
+    navigate(`/market/${id}`);
+  };
+
+  const handleExploreMore = () => {
+    if (clearSearch) clearSearch();
+    navigate(`/explore?q=${encodeURIComponent(searchQuery.trim())}`);
   };
 
   return (
     <div className="absolute top-[38px] right-0 -mt-[1px] w-full bg-slate-950 border border-slate-900 rounded-b-2xl p-4 shadow-2xl z-50 animate-in fade-in slide-in-from-top-1 duration-200 text-right">
       
-      {/* القسم الأول: أزرار التصفح السريع */}
-      <div className="mb-5">
-        <span className="text-[10px] text-slate-500 font-bold tracking-wider block mb-2 font-cairo">تصفح حسب الفرز</span>
-        <div className="flex flex-wrap gap-2 justify-start w-full">
-          {browseItems.map((item, index) => (
-            <button
-              key={index}
-              onClick={() => handleBrowseClick(item.id)}
-              className="bg-slate-950 border border-slate-800 hover:bg-slate-900 hover:border-slate-700 text-slate-300 text-xs font-cairo px-3 py-1.5 rounded-xl transition-colors duration-150 cursor-pointer flex items-center gap-2 flex-row-reverse whitespace-nowrap"
-            >
-              <span>{item.name}</span>
-              <span className="text-white">{item.icon}</span>
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* التعديل الجوهري: إذا كان المستخدم يكتب في خانة البحث، نعرض نتائج قاعدة البيانات */}
+      {searchQuery && searchQuery.trim() !== "" ? (
+        <div>
+          <span className="text-[10px] text-slate-500 font-bold tracking-wider block mb-3 font-cairo">نتائج الأسواق</span>
+          
+          {isSearching ? (
+            <div className="text-center py-4 text-xs text-slate-500 font-cairo">جاري فحص الأسواق اللحظية...</div>
+          ) : liveMarkets.length > 0 ? (
+            <div className="flex flex-col gap-1">
+              {liveMarkets.map((market) => (
+                <div
+                  key={market.id}
+                  onClick={() => handleMarketClick(market.id)}
+                  className="flex items-center justify-between p-2 hover:bg-slate-900/60 rounded-xl transition-all duration-150 cursor-pointer group border border-transparent hover:border-slate-900"
+                >
+                  {/* اليسار: نسبة الـ YES مثل بولي ماركت */}
+                  <div className="bg-blue-950/40 border border-blue-900/40 group-hover:bg-blue-600 group-hover:border-blue-500 text-blue-400 group-hover:text-white px-2 py-1 rounded-lg text-[11px] font-mono font-bold transition-all shrink-0">
+                    {market.yes_price ? `${Math.round(market.yes_price * 100)}%` : "0%"} نعم
+                  </div>
 
-      {/* القسم الثاني: شبكة المواضيع الحقيقية */}
-      <div>
-        <span className="text-[10px] text-slate-500 font-bold tracking-wider block mb-2 font-cairo">الموضوعات</span>
-        <div className="grid grid-cols-2 gap-2">
-          {topics.map((topic, index) => (
-  <div
-    key={index}
-    onClick={() => handleTopicClick(topic.dbId)}
-    className="flex items-center justify-between p-2 bg-slate-950/40 border border-slate-800 hover:bg-slate-900 hover:border-slate-700 rounded-xl transition-all duration-300 cursor-pointer group hover:scale-[1.01]"
-  >
-    <span className="text-xs text-slate-300 font-cairo group-hover:text-white transition-colors pr-1">
-      {topic.name}
-    </span>
-    <div className="h-9 w-9 rounded-lg overflow-hidden border border-slate-900 bg-slate-950 flex items-center justify-center shrink-0">
-      <img 
-  src={topic.image} 
-  alt={topic.name}
-  className="w-full h-full object-cover object-center max-w-full max-h-full aspect-square transition-transform duration-500 group-hover:scale-110 [image-rendering:auto]"
-/>
-    </div>
-  </div>
-))}
+                  {/* اليمين: الصورة وعنوان السوق */}
+                  <div className="flex items-center gap-3 justify-start overflow-hidden w-full pl-2 flex-row-reverse">
+                    <div className="h-7 w-7 rounded-md overflow-hidden bg-slate-900 border border-slate-800 shrink-0 flex items-center justify-center">
+                      <img
+                        src={market.image_url || "/images/politics.png"}
+                        alt="market"
+                        className="w-full h-full object-cover"
+                        onError={(e) => { e.target.src = "/images/politics.png"; }}
+                      />
+                    </div>
+                    <span className="text-xs text-slate-300 group-hover:text-white font-cairo font-normal truncate max-w-full text-right block line-clamp-1 direction-rtl">
+                      {market.question}
+                    </span>
+                  </div>
+                </div>
+              ))}
+
+              {/* زر استكشاف المزيد أسفل الـ 5 نتائج */}
+              <div 
+                onClick={handleExploreMore}
+                className="mt-2 pt-2 border-t border-slate-900 flex items-center justify-center text-xs text-blue-400 hover:text-blue-300 font-cairo font-medium cursor-pointer transition-colors"
+              >
+                استكشاف المزيد عن "{searchQuery}" ←
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-4 text-xs text-slate-500 font-cairo">لا توجد أسواق تطابق هذا البحث حالياً.</div>
+          )}
         </div>
-      </div>
+      ) : (
+        /* الوضع الافتراضي الثابت في حال عدم وجود نص بحث */
+        <>
+          {/* القسم الأول: أزرار التصفح السريع */}
+          <div className="mb-5">
+            <span className="text-[10px] text-slate-500 font-bold tracking-wider block mb-2 font-cairo">تصفح حسب الفرز</span>
+            <div className="flex flex-wrap gap-2 justify-start w-full">
+              {browseItems.map((item, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleBrowseClick(item.id)}
+                  className="bg-slate-950 border border-slate-800 hover:bg-slate-900 hover:border-slate-700 text-slate-300 text-xs font-cairo px-3 py-1.5 rounded-xl transition-colors duration-150 cursor-pointer flex items-center gap-2 flex-row-reverse whitespace-nowrap"
+                >
+                  <span>{item.name}</span>
+                  <span className="text-white">{item.icon}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* القسم الثاني: شبكة المواضيع الحقيقية */}
+          <div>
+            <span className="text-[10px] text-slate-500 font-bold tracking-wider block mb-2 font-cairo">الموضوعات</span>
+            <div className="grid grid-cols-2 gap-2">
+              {topics.map((topic, index) => (
+                <div
+                  key={index}
+                  onClick={() => handleTopicClick(topic.dbId)}
+                  className="flex items-center justify-between p-2 bg-slate-950/40 border border-slate-800 hover:bg-slate-900 hover:border-slate-700 rounded-xl transition-all duration-300 cursor-pointer group hover:scale-[1.01]"
+                >
+                  <span className="text-xs text-slate-300 font-cairo group-hover:text-white transition-colors pr-1">
+                    {topic.name}
+                  </span>
+                  <div className="h-9 w-9 rounded-lg overflow-hidden border border-slate-900 bg-slate-950 flex items-center justify-center shrink-0">
+                    <img 
+                      src={topic.image} 
+                      alt={topic.name}
+                      className="w-full h-full object-cover object-center max-w-full max-h-full aspect-square transition-transform duration-500 group-hover:scale-110 [image-rendering:auto]"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
 
     </div>
   );
