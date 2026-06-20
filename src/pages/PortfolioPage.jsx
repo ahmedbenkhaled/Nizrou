@@ -19,13 +19,14 @@ function PortfolioPage() {
   const [loadingData, setLoadingData] = useState(true);
 
   // ─── جلب البيانات الحية من جداول قاعدة البيانات ───
+  // ─── جلب البيانات الحية من جداول قاعدة البيانات ───
   useEffect(() => {
     if (!user?.id) return;
 
     const fetchPortfolioData = async () => {
       setLoadingData(true);
       try {
-        // 1. جلب المراكز الحالية مع بيانات الأسواق المرتبطة بها
+        // 1. جلب المراكز الحالية مع بيانات الأسواق المرتبطة بها (بصيغة الجمع المطابقة لـ Supabase)
         const { data: posData, error: posErr } = await supabase
           .from("user_positions")
           .select(`
@@ -36,7 +37,7 @@ function PortfolioPage() {
 
         if (!posErr && posData) setDbPositions(posData);
 
-        // 2. جلب سجل العمليات بالكامل مع بيانات الأسواق المرتبطة بها
+        // 2. جلب سجل العمليات بالكامل مع بيانات الأسواق المرتبطة بها (بصيغة الجمع المطابقة لـ Supabase)
         const { data: txData, error: txErr } = await supabase
           .from("transactions")
           .select(`
@@ -57,22 +58,29 @@ function PortfolioPage() {
 
     fetchPortfolioData();
 
-    // الاشتراك في التحديث اللحظي للمحفظة فور حدوث أي صفقات
-    const posChannel = supabase
-      .channel(`portfolio-realtime-${user.id}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "user_positions" }, (payload) => {
-        // التحقق الأمني البرمجي من أن التحديث يخص المستخدم الحالي
-        if (payload.new && payload.new.user_id === user.id) {
+    // الاشتراك الآمن والمنظم في التحديث اللحظي لمنع تكرار الاشتراكات والانهيار
+    const channelName = `portfolio-realtime-${user.id}`;
+    const posChannel = supabase.channel(channelName);
+
+    posChannel
+      .on(
+        "postgres_changes", 
+        { event: "*", schema: "public", table: "user_positions", filter: `user_id=eq.${user.id}` }, 
+        () => {
+          console.log("🔄 تحديث لحظي للمحفظة: تم رصد حركة جديدة في المراكز");
           fetchPortfolioData();
         }
-      })
+      )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(posChannel);
+      if (posChannel) {
+        supabase.removeChannel(posChannel);
+      }
     };
   }, [user?.id]);
 
+  // ─── معالجة الحسابات الرياضية للمراكز (Positions) ───
   // ─── معالجة الحسابات الرياضية للمراكز (Positions) ───
   const processedPositions = useMemo(() => {
     return dbPositions.map(pos => {
