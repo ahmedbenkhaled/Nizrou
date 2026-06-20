@@ -63,7 +63,6 @@ function HomePage({
 
   return (
     <>
-      <Navbar detectedCountry={detectedCountry} setDetectedCountry={setDetectedCountry} isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen} modalView={modalView} setModalView={setModalView} />
 
       <main className="w-full max-w-7xl mx-auto px-6 pt-4 pb-4 flex flex-col gap-4 lg:h-auto min-h-screen" dir="rtl">
         
@@ -174,7 +173,7 @@ function HomePage({
         </div>
       </main>
 
-      <Footer />
+      
       
       <HowItWorksModal 
         isOpen={isModalOpen} 
@@ -330,6 +329,16 @@ if (data && data.length > 0) {
     : 0;
 
   return (
+    <>
+      {/* الـ Navbar يثبت الآن أعلى كل مسارات الصفحات */}
+      <Navbar 
+        detectedCountry={detectedCountry} 
+        setDetectedCountry={setDetectedCountry} 
+        isModalOpen={isModalOpen} 
+        setIsModalOpen={setIsModalOpen} 
+        modalView={modalView} 
+        setModalView={setModalView} 
+      />
   <Routes>
     <Route 
       path="/" 
@@ -378,6 +387,8 @@ if (data && data.length > 0) {
 />
 <Route path="/restricted" element={<GeoblockingPage />} />
     </Routes>
+    <Footer />
+    </>
   );
 }
 
