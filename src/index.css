@@ -20,12 +20,21 @@
 }
 
 /* طبقة الإعدادات الأساسية لقماش لوحة نيزرو */
+/* طبقة الإعدادات الأساسية لقماش لوحة نيزرو */
 @layer base {
   html, body, #root {
-    background-color: #020617; /* Slate 950 */
-    color: #f8fafc; /* Slate 50 */
+    /* الوضع الفاتح الافتراضي: خلفية بيضاء مائلة لزرقة خفيفة جداً مثل بولي ماركت ونصوص داكنة */
+    background-color: #f8fafc; /* Slate 50 */
+    color: #0f172a; /* Slate 900 */
     overflow-x: hidden;
     font-family: var(--font-cairo), system-ui, sans-serif;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  /* عندما ينشط كلاس .dark يتحول الموقع بالكامل للوضع الداكن المعهود */
+  html.dark, html.dark body, html.dark #root {
+    background-color: #020617; /* Slate 950 */
+    color: #f8fafc; /* Slate 50 */
   }
 }
 

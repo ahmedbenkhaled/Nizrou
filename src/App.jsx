@@ -349,13 +349,28 @@ export function AppContent() {
   );
 }
 
+// ننشئ مكون مغلف وسيط لاستهلاك الـ Context بشكل سليم
+function AppStylesWrapper() {
+  const { theme } = useAuth();
+  return (
+    <div className={`min-h-screen flex flex-col pt-[145px] transition-colors duration-200 ${
+      theme === "dark" ? "bg-slate-950 text-white" : "bg-slate-50 text-slate-900"
+    }`}>
+      <AppContent />
+    </div>
+  );
+}
+
 function App() {
+  // سنقوم بجعل Privy يقرأ المظهر المخزن محلياً لحظياً عند الإقلاع
+  const savedTheme = localStorage.getItem("theme") || "dark";
+
   return (
     <PrivyProvider
       appId={PRIVY_APP_ID}
       config={{
         appearance: {
-          theme: "dark",
+          theme: savedTheme === "dark" ? "dark" : "light", // 👈 يتناسق كلياً مع اختيارك
         },
         embeddedWallets: {
           createOnLogin: "users-without-wallets",
@@ -364,9 +379,7 @@ function App() {
     >
       <AuthProvider>
         <Router>
-          <div className="min-h-screen bg-slate-950 text-white flex flex-col pt-[145px]">
-            <AppContent />
-          </div>
+          <AppStylesWrapper /> {/* 👈 استبدال الـ div الثابت بالمكون الديناميكي الذكي */}
         </Router>
       </AuthProvider>
     </PrivyProvider>

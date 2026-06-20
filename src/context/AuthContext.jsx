@@ -19,6 +19,20 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem("theme") || "dark";
+  });
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (theme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
   // دالة تحديث بيانات المستخدم والملف المالي معاً
 const refreshUserSession = async (currentWallet = null) => {    setIsLoading(true);
     try {
@@ -154,7 +168,9 @@ wallet_address: activeWallet.address              })
       sendOTP, 
       verifyOTP, 
       loginWithGoogle, 
-      logout 
+      logout,
+      theme,      // 👈 تم التمرير هنا
+      setTheme    // 👈 تم التمرير هنا
     }}>
       {children}
     </AuthContext.Provider>

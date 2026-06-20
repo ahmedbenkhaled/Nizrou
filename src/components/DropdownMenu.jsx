@@ -1,9 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { useAuth } from "../context/AuthContext"; // 👈 أضف هذا الـ import في الأعلى إن لم يكن موجوداً
+
 function DropdownMenu({ currentLang, setCurrentLang, languages, profile, logout, onOpenSettings }) {
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const { theme, setTheme } = useAuth(); // 👈 استهلاك الحالة المركزية هنا
   const [isLangOpen, setIsLangOpen] = useState(false);
+  
+  const isDarkMode = theme === "dark"; // تحويلها لمتغير منطقي معتمد على الـ Context
   const navigate = useNavigate();
 
   // 🔄 الـ States الخاصة بالتدوير التلقائي السريع وصعود الأنميشن
@@ -112,7 +116,8 @@ function DropdownMenu({ currentLang, setCurrentLang, languages, profile, logout,
       </button>
 
       {/* المظهر الداكن */}
-      <div className="w-full flex flex-row-reverse items-center justify-between text-sm text-slate-300 hover:bg-slate-900/80 px-4 py-2 rounded-xl transition-colors mt-0.5">
+      {/* المظهر الداكن */}
+      <div className="w-full flex flex-row-reverse items-center justify-between text-sm dark:text-slate-300 text-slate-700 dark:hover:bg-slate-900/80 hover:bg-slate-200/60 px-4 py-2 rounded-xl transition-colors mt-0.5">
         <div className="flex flex-row-reverse items-center gap-2.5">
           <svg className="w-4 h-4 shrink-0" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
             <circle fill="#3862CC" cx="256" cy="256" r="256"/>
@@ -121,8 +126,13 @@ function DropdownMenu({ currentLang, setCurrentLang, languages, profile, logout,
           <span className="font-semibold">المظهر الداكن</span>
         </div>
         <label className="relative inline-flex items-center cursor-pointer select-none">
-          <input type="checkbox" checked={isDarkMode} onChange={() => setIsDarkMode(!isDarkMode)} className="sr-only peer" />
-          <div className="w-8 h-4 bg-slate-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-3.5 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
+          <input 
+            type="checkbox" 
+            checked={isDarkMode} 
+            onChange={() => setTheme(isDarkMode ? "light" : "dark")} // 👈 يقوم بتحديث سياق الموقع فوراً
+            className="sr-only peer" 
+          />
+          <div className="w-8 h-4 bg-slate-300 dark:bg-slate-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-3.5 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
         </label>
       </div>
 
