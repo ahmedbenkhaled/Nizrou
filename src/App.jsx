@@ -379,7 +379,7 @@ export function AppContent() {
 function AppStylesWrapper() {
   const { theme } = useAuth();
   return (
-    <div className={`min-h-screen flex flex-col pt-[-145px] transition-colors duration-200 ${
+    <div className={`min-h-screen flex flex-col pt-[145px] transition-colors duration-200 ${
       theme === "dark" ? "bg-slate-950 text-white" : "bg-slate-50 text-slate-900"
     }`}>
       <AppContent />
